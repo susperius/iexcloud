@@ -31,6 +31,7 @@ const (
 	timeSeries    = "time-series/"
 )
 
+// IexError is used to return query based errors.
 type IexError struct {
 	Code    int
 	Message string
@@ -57,8 +58,6 @@ func New(apiKey string, env environment) *Client {
 }
 
 func (c *Client) callAndUnmarshal(ctx context.Context, url string, wrapped interface{}) error {
-	// log.Printf("calling iexcloud api: %s", url)
-
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return err
@@ -105,6 +104,7 @@ func (c *Client) IntradayPrices(ctx context.Context, symbol string) (*IntradayRe
 	return &IntradayResult{Symbol: symbol, Data: res}, err
 }
 
+// HistoricalPrices returns Intrady like information for a symbol over a longer period of time.
 func (c *Client) HistoricalPrices(ctx context.Context, symbol string, duration Duration) (*IntradayResult, error) {
 
 	callURL := c.baseURL + fmt.Sprintf(fmtHistorical, symbol)
@@ -118,6 +118,7 @@ func (c *Client) HistoricalPrices(ctx context.Context, symbol string, duration D
 	return &IntradayResult{Symbol: symbol, Data: res}, err
 }
 
+// Search returns results from the search API endpoint for the provided query.
 func (c *Client) Search(ctx context.Context, query string) (*SearchResults, error) {
 	callURL := c.baseURL + "search/" + query + c.tokenParam
 
@@ -159,6 +160,7 @@ func (c *Client) News(ctx context.Context, symbol string, queryOpts ...queryOpti
 	return &NewsResults{Symbol: symbol, News: res}, nil
 }
 
+// AdvancedDividens returns detailed dividend information and supports international securities.
 func (c *Client) AdvancedDividends(ctx context.Context, symbol string, queryOpts ...queryOption) (*DividendResults, error) {
 	res := []DividendResultItem{}
 	if err := c.TimeSeries(ctx, "advanced_dividends", symbol, "", &res, queryOpts...); err != nil {
